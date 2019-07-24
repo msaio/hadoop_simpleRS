@@ -1,0 +1,108 @@
+-command:
++ in java:
+time hadoop jar hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.2.jar wordcount input output
++ in python:
+time mapred streaming -mapper mapper.py -reducer reducer.py -input input -output output
+
+*** 3 MB txt files***
+-Execute in Python
++1 node:
+>1
+real	0m19,444s
+user	0m14,710s
+sys	0m0,597s
+>2
+real	0m19,090s
+user	0m14,597s
+sys	0m0,528s
+>3
+real	0m19,350s
+user	0m14,357s
+sys	0m0,564s
+
++3 node:
+>1
+real	0m18,599s
+user	0m14,518s
+sys	0m0,614s
+>2
+real	0m19,377s
+user	0m14,336s
+sys	0m0,596s
+>3
+real	0m19,331s
+user	0m14,729s
+sys	0m0,504s
+>4
+real	0m18,329s
+user	0m14,347s
+sys	0m0,604s
+>5
+real	0m18,735s
+user	0m14,310s
+sys	0m0,578s
+
+-Execute in Java
++1 node: 
+>1
+real	0m14,602s
+user	0m10,644s
+sys	0m0,417s
+>2
+real	0m14,440s
+user	0m10,747s
+sys	0m0,403s
+>3
+real	0m14,681s
+user	0m10,871s
+sys	0m0,483s
+
+
++3 node: 
+>1
+real	0m13,542s 
+user	0m10,697s
+sys	0m0,391s
+>2
+real	0m13,353s
+user	0m10,764s
+sys	0m0,462s
+>3
+real	0m13,271s
+user	0m10,626s
+sys	0m0,453s
+>4
+real	0m11,865s
+user	0m9,726s
+sys	0m0,400s
+>5
+real	0m12,222s
+user	0m9,361s
+sys	0m0,366s
+
+*** 119 MB txt files***
+-Execute in Python
++1 node:
+>1
+real	4m43,527s
+user	4m8,047s
+sys	0m8,054s
+
++3 node:
+>1
+real	4m41,761s
+user	4m7,933s
+sys	0m7,705s
+-Execute in Java
++1 node:
+>1
+real	1m1,343s
+user	0m52,371s
+sys	0m1,095s
+
+
++3 node:
+>1
+real	0m54,559s
+user	0m48,208s
+sys	0m1,235s

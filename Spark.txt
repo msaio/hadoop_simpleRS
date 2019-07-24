@@ -1,0 +1,52 @@
+SIMPLE SPARK ON CLUSTER (1 master 1 worker on 1 pc) (map)
+step1:
+	-Start HDFS:
+	start-dfs.sh
+	-Start ApacheSpark Master:
+	start-master.sh
+	-Start ApacheSpark Slave: (Check on http://localhost:8080/ for master-url)
+	start-slave.sh <master-url>
+	-Limit number of cores:
+	start-slave.sh <master-url> -c <number-of-cores>
+	
+
+step2:
+	-Run pyspark
+	pyspark --master <master-url>
+
+SPARK WITH YARN
+
+***
+I highly recommend you to visit these sites to find out how to config a simple cluster (They works for me, somehow)
+BUT dont completely follow them, things change everyday, try to read and understand
+Even the official information from apache not works in your situation
+***
+Hadoop Apache 3.1.2 Spark Apache 2.4.3
+-Hadoop Apache Yarn Commands:
+https://hadoop.apache.org/docs/r3.1.2/hadoop-yarn/hadoop-yarn-site/YarnCommands.html
+-Hadoop Apache Overview:
+https://hadoop.apache.org/docs/r3.1.2/index.html
+-Also check out Configuration Default (I highly recommend this if u have no idea to start with)
++yarn:
+https://hadoop.apache.org/docs/r3.1.2/hadoop-yarn/hadoop-yarn-common/yarn-default.xml
++mapred:
+https://hadoop.apache.org/docs/r3.1.2/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml
+
+-How to set up Hadoop Apache include YARN:
++Single Cluster and Cluster:
+https://hadoop.apache.org/docs/r3.1.2/hadoop-project-dist/hadoop-common/SingleCluster.html
+https://hadoop.apache.org/docs/r3.1.2/hadoop-project-dist/hadoop-common/ClusterSetup.html
+https://www.linode.com/docs/databases/hadoop/how-to-install-and-set-up-hadoop-cluster/
++Spark with YARN:
+https://sparkbyexamples.com/yarn-setup-and-run-map-reduce-program/
+https://www.linode.com/docs/databases/hadoop/install-configure-run-spark-on-top-of-hadoop-yarn-cluster/
++Also check out: 
+https://spark.apache.org/docs/latest/running-on-yarn.html#configuration
+https://spark.apache.org/docs/latest/configuration.html
+
+Hadoop Wiki:
+https://wiki.apache.org/hadoop/FrontPage
+
+
+
+	

@@ -1,0 +1,250 @@
+Hadoop 3.1.2
+
+---------------------------Must have---------------------------
+"""
+********************************
+First of all, U need an Linux OS.
+For me, i was using WSL (Ubuntu18.04LTS).
+I simply went to Windows Store, searched with word 'WSL' and choose 'Ubuntu 18.04 LTS', which i highly recommend for Standalone or Pseudo-distributed Operation.
+Of course that u gotta to set up Linux OS if u want to build a real distributed system.
+"""
+
+"""
+********************************
+Secondly, install 'ssh' or 'pdsh'
+Check your pdsh default rcmd rsh:
+	pdsh -q -w localhost
+If it is not ssh, u need to add this line at the end of .bashrc or .zshrc:
+	export PDSH_RCMD_TYPE=ssh
+Check ssh connection to localhost:
+	ssh localhost
+Sometimes u will get a message:
+	'ssh: connect to host localhost port 22: Connection refused'
+So u gotta run this (on WSL):
+	sudo service ssh start
+Then rerun the command above (U will need password authentication).
+If u only work with I, II operation, u just need to do exactly what i wrote above. The III operation will be little different. 
+"""
+sudo apt install ssh
+sudo apt install pdsh
+echo 'export PDSH_RCMD_TYPE=ssh' >> .bashrc
+echo 'export PDSH_RCMD_TYPE=ssh' >> .zshrc
+source .bashrc
+source .zshrc
+sudo service ssh start
+ssh localhost
+
+"""
+********************************
+Thirdly, Java must be installed.
+For the moment i write this note, Java 8 is the version which works finest with hadoop 3.1.2 so i highly recommend it for u.
+Maybe u dont know:
+Oracle Java downloads now require logging to an Oracle account to download Java updates, so u can not install Oracle Java 8 with PPA at the moment, but OpenJDK still works fine :)
+Simply setup OpenJdk8 with:
+	sudo apt install openjdk-8-jdk
+If u have installed multiple jdk, u can simply switch with command:
+	sudo update-alternatives --config java
+One more thing, u also need to change jar, javac:
+	sudo update-alternatives --config jar
+	sudo update-alternatives --config javac
+Make sure java, jar, javac is 1.8 version, i dont recommend using Java 11 for now (at the moment i wrote this)	
+Optionally, add these lines into .zshrc or .bashrc:
+	export JAVA_HOME=<jdk_path>
+->	export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+	export PATH=${JAVA_HOME}/bin:${PATH}
+2 things why i said 'Optionally':
+	1. U can install jdk in many ways so the path could be different.
+	2. I added Java as EV (Enviroment Variable) to .bashrc or .zshrc for other works. If u only work with Hadoop which uses Java for working itself, u need to add the lines above into hadoop-env.sh. We will go to detail in Operations below.
+"""
+
+"""
+********************************
+Finally, Download hadoop package from apache hadoop official site (Hadoop 3.1.2) then unpack.
+U got 2 options:
+	1. Run Hadoop Command globaly:
+	Add these lines into .bashrc or .zshrc:
+		export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
+		export HADOOP_HOME=/home/msaio/hadoop
+		export PATH=$PATH:$HADOOP_HOME/bin
+		export PATH=$PATH:$HADOOP_HOME/sbin
+		export HADOOP_MAPRED_HOME=${HADOOP_HOME}
+		export HADOOP_COMMON_HOME=${HADOOP_HOME}
+		export HADOOP_HDFS_HOME=${HADOOP_HOME}
+		export HADOOP_YARN_HOME=${HADOOP_HOME}
+		export HADOOP_CONF_DIR=/home/msaio/hadoop/etc/hadoop
+		export LD_LIBRARY_PATH=/home/msaio/hadoop/lib/native:$LD_LIBRARY_PATH
+	2. Run Hadoop Command inside the packages:
+	Hadoop commands lie inside bin/ and sbin/ so running command will look like this:
+		/home/msaio/hadoop/bin/hdfs dfs -ls /
+	this line is used to show up path root of distributed system.
+Then, last but not least, add java path at the end of file hadoop-env.sh
+	export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+	export PATH=${JAVA_HOME}/bin:${PATH}
+which i talked above.
+"""
+
+"""
+Now we do a mini test:
+	run commnad if u choose option 1 above:
+		hadoop
+	run command if u choose option 2:
+		cd hadoop
+		bin/hadoop  
+"""
+
+So now we can deal with 3 main Operations of Hadoop:
+I. Standalone Operation:
+	"""
+	A non-distributed mode
+	As a single Java process
+	For debugging
+	Data on local
+	Only add JAVA path
+	"""
+	- Set Up:
+		1. Do the 'Must Have'
+		2. Do not config any file but adding java path into the hadoop-env.sh 
+		3. Testing wordcount:
+			+ Create an input_dir directory:
+			+ Copy some .txt file into input_dir
+			+ Create an empty output_dir directory:
+			+ Run this command from unpacked hadoop folder:
+				bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.2.jar wordcount input_dir output_dir
+			+ Check output_dir for results:
+				cat output/*
+
+II. Pseudo-distributed Operation
+	"""
+	A single-node cluster: namenode and datanode on the same computer.
+	Each Hadoop daemon runs in a separate Java process.
+	We will run on Localhost
+	"""
+	-Set Up:
+		1. Do the "Must Have"
+		2. Config etc/hadoop/core-site.xml:
+			<configuration>
+    				<property>
+        				<name>fs.defaultFS</name>
+        				<value>hdfs://localhost:9000</value>
+    				</property>
+			</configuration>
+		This configuration means your file system is connected with port 9000 from localhost, so we get the file from distributed system path like this: "hdfs://localhost:9000/<path>"
+		U dont have to use localhost, u can use IPv4 or Computer's Name on LAN instead if working with multi-node cluster.
+		3. Config etc/hadoop/hdfs-site.xml:
+			<configuration>
+				<property>
+					<name>dfs.replication</name>
+        				<value>1</value>
+    				</property>
+			</configuration>
+		This config means how many copy of file block u have on hdfs. Dont set value more than the number of nodes u got.
+		4. Set up connection ssh to localhost:
+		Run commnand:
+			ssh localhost
+		If u cannot ssh to localhost, excuting these following commands:
+			ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+			cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+			chmod 0600 ~/.ssh/authorized_keys
+		If u are already familiar with git, u can simply reuse the ssh key from git.
+		U also can use multiple keys when u add keys in different lines into directory authorized_keys
+		One more thing, u will need 1 ssh key  when working with multi-node cluster, so choose carefully.
+		5. Next, u need to run a format for namenode:
+			hdfs namenode -format
+		or
+			bin/hdfs namenode -format
+		So, why do u have to format? After 2 config above, 2 things have to change:
+			1. First is set up connection:
+			U are using port 9000 on localhost. If u want to change to port 10000 on 192.168.56.20, u will need to reformat
+			2. Second is replication:
+			At the first format u set 1 replication. Now u have to connect 3 more nodes, u gotta to change config to 3 and reformat.
+		5. Start namenode daemon and datanode daemon:
+			sbin/start-dfs.sh
+		or
+			start-dfs.sh
+		6. Check
+		On terminal:
+			bin/hdfs dfsadmin -report
+		or
+			hdfs dfsadmin -report
+		On web interface (default on version 3.1.2):
+			http://localhost:9870/
+		Of course, u can change this address above.
+		7. Testing wordcount:
+		Hadoop requires these lines and i dont know why but just stick with it:
+			bin/hdfs dfs -mkdir /user
+			bin/hdfs dfs -mkdir /user/<username>
+		Create a input dir:
+			bin/hdfs dfs -mkdir input
+		Simply copy from config folder into input dir:
+			bin/hdfs dfs -put etc/hadoop/*.xml input
+		Now we run wordcount:
+			bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.1.2.jar wordcount input output
+		We can get output by copying to local:
+			bin/hdfs dfs -get output output
+			cat output/*
+		Or just:
+			bin/hdfs dfs -cat output/*
+			or
+			hdfs dfs -cat output/*
+		8. Done.
+		Stop hdfs:
+			sbin/stop-dfs.sh
+		or	
+			stop-dfs.sh
+	***
+		If u want to work with YARN, u gotta config mapred-site.xml and yarn-site.xml then run start-yarn.sh
+		Try: https://hadoop.apache.org/docs/r3.2.0/hadoop-project-dist/hadoop-common/SingleCluster.html
+		If u can figure out how it work just copy
+			https://hadoop.apache.org/docs/r3.2.0/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml
+			https://hadoop.apache.org/docs/r3.2.0/hadoop-yarn/hadoop-yarn-common/yarn-default.xml
+		to your mapred-site.xml nad yarn-site.xml
+		It will work fine.
+	***
+
+III. Multi-node Operation (Multi-node Cluster):
+	"""
+	HDFS on many computers
+	Distributed Computing
+	"""
+	- Setup:
+		The idea is make sure every node have java 8 installed, ssh and pdsh install, hadoop package install, the same hadoop config on all nodes. We will go to details later
+		Make sure all nodes can connect to the others on LAN
+		Oh i forgot, u got use set the username is the same
+		1. On namenode:
+			+ add to /etc/hosts:
+				Ipv4_of_namenode_computer namenode_computer_name
+				Ipv4_of_datanode_computer_1 datanode_computer_name_1
+				Ipv4_of_datanode_computer_2 datanode_computer_name_2
+				...
+			+ It will look like this:
+				192.168.56.1 master
+				192.168.56.2 node1
+				192.168.56.3 node2
+			+ Create ssh connection to node:
+				ssh-copy-id -i $HOME/.ssh/id_rsa.pub msaio@node1
+				ssh-copy-id -i $HOME/.ssh/id_rsa.pub msaio@node2
+			'msaio' is username on my pc.
+			+ Check connect through every node:
+				ex: ssh node1
+			+ First of all, u gotta config on the namenode then copy to all nodes like this:
+				for node in node1 node2; do 
+					scp ~/hadoop/etc/hadoop/* $node:/home/msaio/hadoop/etc/hadoop/;
+				done
+		2. From namenode:
+			+ Run format namenode:
+				bin/hadoop namenode -format
+			+ Check Cluster:
+				hdfs dfsadmin -report
+			or on browser interface:
+				http://master:9870
+		3. Excute wordcount job:
+			It is exactly the same psuedo operation
+			Remmember this, everytime u excute  wordcount job, u must remove the output from the output from previous excution.
+
+I have builded 3 os on virtul box with all config and wordcount examples: 
+https://drive.google.com/drive/folders/1_ecMBROPE7MPMF2EiG3DpnQ12sqAFRH5
+
+Here is the results:
+check tk.txt for details
+
+			
