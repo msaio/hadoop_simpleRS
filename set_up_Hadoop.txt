@@ -51,8 +51,7 @@ Make sure java, jar, javac is 1.8 version, i dont recommend using Java 11 for no
 Optionally, add these lines into .zshrc or .bashrc:
 	export JAVA_HOME=<jdk_path>
 ->	export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-	export PATH=${JAVA_HOME}/bin:${PATH} // add all Env var (include Env vars of Windows(WSL))
-	export PATH=${PATH}:${JAVA_HOME}/bin // add JAVA path
+	export PATH="$PATH:${JAVA_HOME}/bin" 
 2 things why i said 'Optionally':
 	1. U can install jdk in many ways so the path could be different.
 	2. I added Java as EV (Enviroment Variable) to .bashrc or .zshrc for other works. If u only work with Hadoop which uses Java for working itself, u need to add the lines above into hadoop-env.sh. We will go to detail in Operations below.
